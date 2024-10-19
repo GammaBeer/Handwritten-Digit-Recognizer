@@ -27,5 +27,6 @@ This project is a Handwritten Digit Recognition application built with React and
 
 <hr>
 
-   ```bash
-   git clone https://github.com/yourusername/handwritten-digit-recognition.git
+## Gallery
+
+![Usage](usage.png)
