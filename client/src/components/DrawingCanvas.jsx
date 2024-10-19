@@ -89,10 +89,6 @@ const DrawingCanvas = () => {
       const response = await axios.post(`${import.meta.env.VITE_BACKEND_URL}/predict`, {
         image: base64Image,
       });
-      // const response = await axios.post(`${import.meta.env.VITE_BACKEND_URL}/predict`, {
-      //   image: base64Image,
-      // });
-      
       const result = response.data;
 
       context.strokeStyle = 'red';
