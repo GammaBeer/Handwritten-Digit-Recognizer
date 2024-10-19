@@ -22,10 +22,20 @@ const DrawingCanvas = () => {
   };
 
   useEffect(() => {
-    // Set canvas size to fit the window size dynamically
     const canvas = canvasRef.current;
     canvas.width = window.innerWidth;
     canvas.height = window.innerHeight;
+
+    const handleResize = () => {
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+    };
+
+    window.addEventListener('resize', handleResize);
+    
+    return () => {
+      window.removeEventListener('resize', handleResize); // Cleanup listener
+    };
   }, []);
 
   const startDrawing = ({ nativeEvent }) => {
@@ -53,50 +63,46 @@ const DrawingCanvas = () => {
   const endDrawing = async () => {
     setIsDrawing(false);
     if (xCoords.length === 0 || yCoords.length === 0) return;
-  
-    // Find the bounding box of the drawn number
+
     const minX = Math.min(...xCoords) - 10;
     const minY = Math.min(...yCoords) - 10;
     const maxX = Math.max(...xCoords) + 10;
     const maxY = Math.max(...yCoords) + 10;
-  
-    // Clear the coordinates
+
     xCoords = [];
     yCoords = [];
-  
-    // Get the image data of the bounding box
+
     const canvas = canvasRef.current;
     const context = canvas.getContext('2d');
     const imageData = context.getImageData(minX, minY, maxX - minX, maxY - minY);
-  
-    // Create a new canvas to crop the number
+
     const tempCanvas = document.createElement('canvas');
     const tempContext = tempCanvas.getContext('2d');
     tempCanvas.width = imageData.width;
     tempCanvas.height = imageData.height;
     tempContext.putImageData(imageData, 0, 0);
-  
-    // Convert to base64 image
+
     const base64Image = tempCanvas.toDataURL('image/png');
-  
+
     try {
-      // Use axios to send the image to the backend for prediction
-      const response = await axios.post('http://localhost:5000/predict', {
-        image: base64Image
+      // Correct API URL access
+      const response = await axios.post(`${import.meta.env.VITE_BACKEND_URL}/predict`, {
+        image: base64Image,
       });
-  
+      // const response = await axios.post(`${import.meta.env.VITE_BACKEND_URL}/predict`, {
+      //   image: base64Image,
+      // });
+      
       const result = response.data;
 
-      // Draw the red rectangle around the predicted digit
       context.strokeStyle = 'red';
       context.lineWidth = 2;
       context.strokeRect(minX, minY, maxX - minX, maxY - minY);
-  
-      // Store the prediction along with the coordinates
+
       setPredictions((prev) => [
         ...prev,
         {
-          digit: digitToWord[result.digit], // Convert digit to word
+          digit: digitToWord[result.digit],
           x: minX,
           y: minY,
         },
