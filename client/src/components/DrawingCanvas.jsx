@@ -34,7 +34,7 @@ const DrawingCanvas = () => {
     window.addEventListener('resize', handleResize);
     
     return () => {
-      window.removeEventListener('resize', handleResize); // Cleanup listener
+      window.removeEventListener('resize', handleResize); 
     };
   }, []);
 
@@ -85,7 +85,7 @@ const DrawingCanvas = () => {
     const base64Image = tempCanvas.toDataURL('image/png');
 
     try {
-      // Correct API URL access
+      
       const response = await axios.post(`${import.meta.env.VITE_BACKEND_URL}/predict`, {
         image: base64Image,
       });
@@ -125,7 +125,6 @@ const DrawingCanvas = () => {
         style={{ backgroundColor: 'black' }}
       />
       
-      {/* Render the predictions */}
       {predictions.map((prediction, index) => (
         <div
           key={index}
@@ -141,8 +140,6 @@ const DrawingCanvas = () => {
           {prediction.digit}
         </div>
       ))}
-
-      {/* Clear button, positioned bottom-right */}
       <button
         onClick={clearCanvas}
         style={{

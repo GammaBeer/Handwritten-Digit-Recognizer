@@ -1,5 +1,5 @@
 from flask import Flask, request, jsonify
-from flask_cors import CORS  # Import CORS
+from flask_cors import CORS  
 from tensorflow.keras.models import load_model  
 from PIL import Image
 import numpy as np
@@ -8,18 +8,18 @@ from io import BytesIO
 
 app = Flask(__name__)
 
-# Enable CORS for all routes
+
 CORS(app)
 
-# Load your pre-trained Keras model
+
 model = load_model('./recognition.keras')
 
 def preprocess_image(image):
     """ Preprocess the image to fit the model input requirements. """
-    image = image.convert('L')  # Convert to grayscale
-    image = image.resize((28, 28))  # Resize to 28x28
-    image = np.array(image) / 255.0  # Normalize to [0, 1]
-    image = np.expand_dims(image, axis=(0, -1))  # Add batch and channel dimensions
+    image = image.convert('L')  
+    image = image.resize((28, 28))  
+    image = np.array(image) / 255.0  
+    image = np.expand_dims(image, axis=(0, -1))  
     return image
 
 @app.route('/hello', methods=['GET'])
@@ -31,12 +31,12 @@ def predict():
     data = request.json
     image_data = data.get('image')
 
-    # Decode the base64 image
+    
     if image_data:
-        image_data = image_data.split(",")[1]  # Remove the metadata part
+        image_data = image_data.split(",")[1]  
         image = Image.open(BytesIO(base64.b64decode(image_data)))
 
-        # Preprocess the image and make predictions
+        
         processed_image = preprocess_image(image)
         prediction = model.predict(processed_image)
         predicted_digit = np.argmax(prediction)
