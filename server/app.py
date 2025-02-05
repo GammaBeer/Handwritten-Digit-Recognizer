@@ -8,11 +8,14 @@ from io import BytesIO
 
 app = Flask(__name__)
 
-CORS(app, resources={r"/*": {"origins": "*"}})  # Allow all origins
+# Enable CORS for all routes
+CORS(app, resources={r"/*": {"origins": "*"}})
 
+# Load the trained model once at startup
 model = load_model('./recognition.keras')
 
 def preprocess_image(image):
+    """ Convert image to grayscale, resize to 28x28, normalize, and reshape for model input. """
     image = image.convert('L')  
     image = image.resize((28, 28))  
     image = np.array(image) / 255.0  
@@ -21,24 +24,34 @@ def preprocess_image(image):
 
 @app.route('/predict', methods=['POST'])
 def predict():
+    """ Process the image, make a prediction, and return the digit. """
     data = request.json
     image_data = data.get('image')
 
-    if image_data:
+    if not image_data:
+        return jsonify({'error': 'No image data received'}), 400
+
+    try:
+        # Decode base64 image
         image_data = image_data.split(",")[1]  
         image = Image.open(BytesIO(base64.b64decode(image_data)))
 
+        # Preprocess image
         processed_image = preprocess_image(image)
+
+        # Predict
         prediction = model.predict(processed_image)
         predicted_digit = np.argmax(prediction)
 
-        response = jsonify({'digit': int(predicted_digit)})
-        response.headers.add("Access-Control-Allow-Origin", "*")  # Allow CORS
-        return response
+        return jsonify({'digit': int(predicted_digit)})
 
-    response = jsonify({'error': 'No image data received'})
-    response.headers.add("Access-Control-Allow-Origin", "*")
-    return response, 400
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+# 🛠️ Simple POST method to test deployment
+@app.route('/test', methods=['POST'])
+def test():
+    return jsonify({'message': 'Hello, World! Your Flask server is running successfully.'})
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000)
